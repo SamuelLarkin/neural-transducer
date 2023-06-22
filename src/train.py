@@ -249,11 +249,22 @@ class Trainer(BaseTrainer):
                 self.evaluator = util.BasicEvaluator()
 
     def evaluate(self, mode, batch_size, epoch_idx, decode_fn):
-        self.model.eval()
-        sampler, nb_batch = self.iterate_batch(mode, batch_size)
-        results = self.evaluator.evaluate_all(
-            sampler, batch_size, nb_batch, self.model, decode_fn
-        )
+        # For debugging, easy switching between old and new code.
+        if True:
+            write_fp = f"{self.params.model}prediction-epoch={epoch_idx}"
+            results = self.decode(
+                    mode=mode,
+                    batch_size=batch_size,
+                    write_fp=write_fp,
+                    decode_fn=decode_fn,
+                    )
+        else:
+            self.model.eval()
+            sampler, nb_batch = self.iterate_batch(mode, batch_size)
+            results = self.evaluator.evaluate_all(
+                sampler, batch_size, nb_batch, self.model, decode_fn
+            )
+
         for result in results:
             self.logger.info(
                 f"{mode} {result.long_desc} is {result.res} at epoch {epoch_idx}"
